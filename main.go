@@ -15,15 +15,15 @@ func main() {
 		{1, 2, 0, 0, 0, 7, 4, 0, 0},
 		{0, 4, 9, 2, 0, 6, 0, 0, 7},
 	}
-	printBoard(board)
-	if solveSodoku(board, 0, 0) == true {
-		printBoard(board)
+	printBoard(&board)
+	if solveSodoku(&board, 0, 0) == true {
+		printBoard(&board)
 	} else {
 		fmt.Print("Can not be solved")
 	}
 }
 
-func printBoard(board [9][9]int) {
+func printBoard(board *[9][9]int) {
 	var i, j int
 	fmt.Print("______________________\n")
 	for i = 0; i < 9; i++ {
@@ -43,44 +43,65 @@ func printBoard(board [9][9]int) {
 
 }
 
-func isValid(board [9][9]int, j, i int) bool {
+func isValid(board *[9][9]int, j, i int) bool {
 	var boxX, boxY, row, col, index int
+	if j == 2 && i == 0 && board[i][j] == 3 {
+		index = 0
+	}
 	boxX = i / 3
 	boxY = j / 3
-	for row = boxX; row < boxX+3; row++ {
-		for col = boxY; col < boxY+3; col++ {
+	for row = boxX * 3; row < 3*boxX+3; row++ {
+		for col = boxY * 3; col < 3*boxY+3; col++ {
 			if board[row][col] == board[i][j] && (i != row || j != col) {
 				return false
 			}
 		}
 	}
-	for index = 0; i < 9; i++ {
+	for index = 0; index < 9; index++ {
 		if (board[i][index] == board[i][j] && j != index) || (board[index][j] == board[i][j] && i != index) {
 			return false
 		}
 	}
 	return true
 }
-func solveSodoku(board [9][9]int, j, i int) bool {
+func solveSodoku(board *[9][9]int, j, i int) bool {
 	if i == 9 || j == 9 {
 		return true
 	}
-	fmt.Println("SDa")
 	var newJ, newI int
 	Digit := 1
-	if j == 8 {
-		newI = i + 1
+	currJ := j
+	currI := i
+	for currI < 9 {
+		if board[currI][currJ] == 0 {
+			break
+		}
+		if currJ == 8 {
+			currI = currI + 1
+			currJ = 0
+		} else {
+			currJ = currJ + 1
+		}
+	}
+	if currJ == 8 {
+		newI = currI + 1
 		newJ = 0
 	} else {
-		newI = i
-		newJ = j + 1
+		newI = currI
+		newJ = currJ + 1
+	}
+	if currI == 9 {
+		return true
+	}
+	if board[0][2] == 5 && board[0][4] == 3 && currJ == 8 {
+		board[0][2] = 5
 	}
 	for ; Digit <= 9; Digit++ {
-		board[i][j] = Digit
-		if isValid(board, j, i) == true && solveSodoku(board, newJ, newI) == true {
+		board[currI][currJ] = Digit
+		if isValid(board, currJ, currI) == true && solveSodoku(board, newJ, newI) == true {
 			return true
 		}
 	}
-	board[i][j] = 0
+	board[currI][currJ] = 0
 	return false
 }
